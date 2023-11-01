@@ -12,7 +12,7 @@ def test_index(client, auth):
     assert b"Log Out" in response.data
     assert b"test title" in response.data
     assert b"by test on 2018-01-01" in response.data
-    assert b"test\nbody" in response.data
+    assert b"j'aime" in response.data
     assert b'href="/1/update"' in response.data
 
 
@@ -100,3 +100,15 @@ def test_delete(client, auth, app):
         db = get_db()
         post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
         assert post is None
+
+def test_liking(client, auth, app):
+    auth.login()
+    client.get("/1/liking")
+    response = client.get("/")
+    assert b"bi-hand-thumbs-up-fill" in response.data
+    assert b"j'aime" not in response.data
+
+    with app.app_context():
+        db = get_db()
+        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
+        assert post['liked'] == 1 
