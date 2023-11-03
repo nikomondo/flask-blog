@@ -1,5 +1,7 @@
 import pytest
-from flaskr.db import get_db
+from sqlalchemy import func, select
+from flaskr.db import db
+from flaskr.models.blog import Post
 
 
 def test_index(client, auth):
@@ -32,9 +34,10 @@ def test_login_required(client, path):
 def test_author_required(app, client, auth):
     # change the post author to another user
     with app.app_context():
-        db = get_db()
-        db.execute("UPDATE post SET author_id = 2 WHERE id = 1")
-        db.commit()
+        post = db.get_or_404(Post, 1)
+        post.author_id = 2
+        db.session.add(post)
+        db.session.commit()
 
     auth.login()
     # current user can't modify other user's post
@@ -62,9 +65,8 @@ def test_create(client, auth, app):
     client.post("/create", data={"title": "created", "body": ""})
 
     with app.app_context():
-        db = get_db()
-        count = db.execute("SELECT COUNT(id) FROM post").fetchone()[0]
-        assert count == 2
+        result = db.select(Post).filter_by(id=2)
+        assert result.len() == 2
 
 
 def test_update(client, auth, app):
@@ -74,8 +76,8 @@ def test_update(client, auth, app):
 
     with app.app_context():
         db = get_db()
-        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
-        assert post["title"] == "updated"
+        post = db.select(Post).filter_by(id=1).fetchone()
+        assert post.title == "updated"
 
 
 @pytest.mark.parametrize(
@@ -97,8 +99,7 @@ def test_delete(client, auth, app):
     assert response.headers["Location"] == "/"
 
     with app.app_context():
-        db = get_db()
-        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
+        post = db.select(Post).filter_by(id=1).fetchone()
         assert post is None
 
 def test_liking(client, auth, app):
@@ -109,6 +110,5 @@ def test_liking(client, auth, app):
     assert b"j'aime" not in response.data
 
     with app.app_context():
-        db = get_db()
-        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
-        assert post['liked'] == 1 
+        post = db.select(Post).filter_by(id=1).fetchone()
+        assert post.liked == 1 
