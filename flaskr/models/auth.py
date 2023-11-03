@@ -1,5 +1,6 @@
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
+from flaskr.db import db
 
 class User(db.Model):
     __tablename__ = "user"
