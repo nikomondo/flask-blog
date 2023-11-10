@@ -4,13 +4,14 @@ from werkzeug.exceptions import abort
 from flaskr.auth import login_required
 from flaskr.db import db
 from flaskr.models.blog import Post
+from flaskr.models.auth import User
 
 bp = Blueprint("blog", __name__)
 
 
 @bp.route("/")
 def index():
-    posts = Post.query.all()
+    posts = db.session.query(Post).join(User.username).all()
     return render_template("blog/index.html", posts=posts)
 
 
@@ -52,7 +53,7 @@ def update(id):
         if error is not None:
             flash(error)
         else:
-            post.title= title
+            post.title = title
             post.body = body
             db.session.add(post)
             db.session.commit()
@@ -65,7 +66,7 @@ def update(id):
 @login_required
 def delete(id):
     post = db.get_or_404(Post, id)
-    db.session.delete(post) 
+    db.session.delete(post)
     db.session.commit()
     return redirect(url_for("blog.index"))
 
@@ -81,9 +82,9 @@ def details(id):
 @login_required
 def liking(id):
     post = db.get_or_404(Post, id)
-    if post.liked == 0 : 
-        post.liked = 1    
-    else: 
+    if post.liked == 0:
+        post.liked = 1
+    else:
         post.liked = 0
     db.session.add(post)
     db.session.commit()

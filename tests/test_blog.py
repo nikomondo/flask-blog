@@ -4,13 +4,14 @@ from flaskr.db import db
 from flaskr.models.blog import Post
 
 
-def test_index(client, auth):
+def test_index(client, auth, insert_user, insert_post):
     response = client.get("/")
     assert b"Log In" in response.data
     assert b"Register" in response.data
 
     auth.login()
     response = client.get("/")
+    print(response.data)
     assert b"Log Out" in response.data
     assert b"test title" in response.data
     assert b"by test on 2018-01-01" in response.data
@@ -31,7 +32,7 @@ def test_login_required(client, path):
     assert response.headers["Location"] == "/auth/login"
 
 
-def test_author_required(app, client, auth):
+def test_author_required(app, client, auth, insert_user):
     # change the post author to another user
     with app.app_context():
         post = db.get_or_404(Post, 1)
@@ -54,12 +55,12 @@ def test_author_required(app, client, auth):
         "/2/delete",
     ),
 )
-def test_exists_required(client, auth, path):
+def test_exists_required(client, auth, path, insert_user):
     auth.login()
     assert client.post(path).status_code == 404
 
 
-def test_create(client, auth, app):
+def test_create(client, auth, app, insert_user):
     auth.login()
     assert client.get("/create").status_code == 200
     client.post("/create", data={"title": "created", "body": ""})
@@ -69,7 +70,7 @@ def test_create(client, auth, app):
         assert result.len() == 2
 
 
-def test_update(client, auth, app):
+def test_update(client, auth, app, insert_user):
     auth.login()
     assert client.get("/1/update").status_code == 200
     client.post("/1/update", data={"title": "updated", "body": ""})
@@ -87,13 +88,13 @@ def test_update(client, auth, app):
         "/1/update",
     ),
 )
-def test_create_update_validate(client, auth, path):
+def test_create_update_validate(client, auth, path, insert_user):
     auth.login()
     response = client.post(path, data={"title": "", "body": ""})
     assert b"Title is required." in response.data
 
 
-def test_delete(client, auth, app):
+def test_delete(client, auth, app, insert_user):
     auth.login()
     response = client.post("/1/delete")
     assert response.headers["Location"] == "/"
@@ -102,7 +103,8 @@ def test_delete(client, auth, app):
         post = db.select(Post).filter_by(id=1).fetchone()
         assert post is None
 
-def test_liking(client, auth, app):
+
+def test_liking(client, auth, app, insert_user):
     auth.login()
     client.get("/1/liking")
     response = client.get("/")
@@ -111,4 +113,4 @@ def test_liking(client, auth, app):
 
     with app.app_context():
         post = db.select(Post).filter_by(id=1).fetchone()
-        assert post.liked == 1 
+        assert post.liked == 1

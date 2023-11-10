@@ -10,7 +10,7 @@ from flask import (
     url_for,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy import exc
+from sqlalchemy import exc, select
 from flaskr.db import db
 from flaskr.models.auth import User
 
@@ -63,13 +63,10 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
         error = None
-        user = db.one_or_404(
-            db.select(User).filter_by(username=username),
-            description=f"No user named '{username}'.",
-        )
+        user = db.session.query(User).filter_by(username=username).first()
 
         if user is None:
-            error = "Incorrect username."
+            error = f"User {username} is not registered."
         elif not check_password_hash(user.password, password):
             error = "Incorrect password."
 
