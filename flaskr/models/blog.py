@@ -1,5 +1,5 @@
 from sqlalchemy import Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from flaskr.db import db
 from datetime import datetime
 from flaskr.models.auth import User
