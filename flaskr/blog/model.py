@@ -2,7 +2,7 @@ from sqlalchemy import Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from flaskr.db import db
 from datetime import datetime
-from flaskr.models.auth import User
+from flaskr.auth.model import User
 
 
 class Post(db.Model):

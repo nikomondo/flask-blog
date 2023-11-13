@@ -1,8 +1,9 @@
+from typing import Any
 import pytest
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 from flaskr import create_app
 from flaskr.db import db
-from werkzeug.security import generate_password_hash
 
 
 @pytest.fixture()
@@ -23,7 +24,7 @@ def app():
 
 
 @pytest.fixture
-def client(app):
+def client(app: Any):
     return app.test_client()
 
 
@@ -41,13 +42,13 @@ class AuthActions(object):
 
 
 @pytest.fixture
-def auth(client):
+def auth(client: Any):
     return AuthActions(client)
 
 
 @pytest.fixture
-def insert_user(app):
-    from flaskr.models.auth import User
+def insert_user(app: Any):
+    from flaskr.auth.model import User
 
     test_pwd = generate_password_hash("test")
     other_pwd = generate_password_hash("other")
@@ -67,8 +68,8 @@ def insert_user(app):
 
 
 @pytest.fixture()
-def insert_post(app):
-    from flaskr.models.blog import Post
+def insert_post(app: Any):
+    from flaskr.blog.model import Post
 
     date = datetime(2018, 1, 1)
     with app.app_context():

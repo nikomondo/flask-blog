@@ -1,7 +1,7 @@
 import pytest
 from flask import g, session
 from flaskr.db import db
-from flaskr.models.auth import User
+from flaskr.auth.model import User
 
 
 def test_register(client, app):

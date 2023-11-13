@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy import func, select
 from flaskr.db import db
-from flaskr.models.blog import Post
+from flaskr.blog.model import Post
 
 
 def test_index(client, auth, insert_user, insert_post):
