@@ -75,6 +75,14 @@ html {
     background: #cae6f6;
     border: 1px solid #377ba8;
   }
+
+  .error {
+    margin: 1em 0;
+    padding: 1em;
+    color: red;
+    background: #cae6f6;
+    border: 1px solid #377ba8;
+  }
   
   .post > header {
     display: flex;

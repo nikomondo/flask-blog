@@ -9,6 +9,9 @@ from flask import (
     session,
     url_for,
 )
+from flask_wtf import FlaskForm
+from wtforms import StringField , PasswordField
+from wtforms.validators import DataRequired, Length, EqualTo, Regexp
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import exc, select
 from flaskr.db import db
@@ -16,6 +19,12 @@ from flaskr.auth.model import User
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
+#regex=r'^(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*[A-Z])(?=.*\d).{4,20}$',
+#message="Le mot de passe doit contenir au moins un caractère spécial, une majuscule, un chiffre, et avoir une longueur entre 4 et 20 caractères."
+class RegisterForm(FlaskForm):
+    username = StringField('Username', [Length(min=4, max=25) , DataRequired()])
+    password = PasswordField('New Password', [ DataRequired(), EqualTo('confirm', message='Passwords must match') ])
+    confirm = PasswordField('Repeat Password')
 
 @bp.before_app_request
 def load_logged_in_user():
@@ -29,32 +38,21 @@ def load_logged_in_user():
 
 @bp.route("/register", methods=("GET", "POST"))
 def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        error = None
-
-        if not username:
-            error = "Username is required."
-        elif not password:
-            error = "Password is required."
-
-        if error is None:
+    form = RegisterForm(request.form)
+    if request.method == "POST" and  form.validate_on_submit():
             try:
                 user = User(
-                    username=username, password=generate_password_hash(password)
+                    username=form.username.data, password=generate_password_hash(form.password.data)
                 )
                 db.session.add(user)
                 db.session.commit()
             except exc.IntegrityError:
                 db.session.rollback()
-                error = f"User {username} is already registered."
+                flash( f"User {form.username.data} is already registered.")
             else:
                 return redirect(url_for("auth.login"))
 
-        flash(error)
-
-    return render_template("auth/register.html")
+    return render_template("auth/register.html" , form=form)
 
 
 @bp.route("/login", methods=("GET", "POST"))
